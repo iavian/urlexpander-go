@@ -1,1 +1,1 @@
-web: bin/resolver
+web: bin/urlresolver-go
