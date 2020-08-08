@@ -17,7 +17,7 @@ RUN go build -mod=readonly -v -o /app/server
 # https://hub.docker.com/_/alpine
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine
-RUN apk add --no-cache ca-certificates memcached
+RUN apk add --no-cache ca-certificates memcached golang
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /app/server
