@@ -1,4 +1,6 @@
-FROM golang:1.13 as builder
+FROM alpine:latest as builder
+
+RUN apk add --no-cache ca-certificates memcached git make musl-dev go
 
 COPY . /app
 
@@ -13,20 +15,8 @@ RUN go mod download
 # Build the binary.
 RUN go build -mod=readonly -v -o /app/server
 
-# Use the official Alpine image for a lean production container.
-# https://hub.docker.com/_/alpine
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine
-RUN apk add --no-cache ca-certificates memcached golang
-
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /app/server
-
-CMD ["ls  /app/server"]
-
-CMD ["ls  /"]
-
-CMD ["ls  /app"]
 
 ENV MEMCACHED_SERVER localhost:11211
 
