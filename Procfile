@@ -1,1 +1,1 @@
-web: bin/urlresolver-go
+web: server
