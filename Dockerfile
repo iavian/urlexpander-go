@@ -20,9 +20,9 @@ FROM alpine
 RUN apk add --no-cache ca-certificates memcached
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /app/server /server
+COPY --from=builder /app/server /app/server
 
 ENV MEMCACHED_SERVER localhost:11211
 
 # Run the web service on container startup.
-CMD ["/server"]
+CMD ["/app/server"]
