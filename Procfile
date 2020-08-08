@@ -1,1 +1,0 @@
-web: app/server1

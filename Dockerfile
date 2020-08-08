@@ -22,6 +22,12 @@ RUN apk add --no-cache ca-certificates memcached
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /app/server
 
+CMD ["ls  /app/server"]
+
+CMD ["ls  /"]
+
+CMD ["ls  /app"]
+
 ENV MEMCACHED_SERVER localhost:11211
 
 # Run the web service on container startup.
