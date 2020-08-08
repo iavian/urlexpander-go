@@ -1,18 +1,17 @@
 FROM golang:1.13 as builder
 
+COPY . /app
+
 # Create and change to the app directory.
 WORKDIR /app
 
 # Retrieve application dependencies.
 # This allows the container build to reuse cached dependencies.
-COPY go.* ./
+
 RUN go mod download
 
-# Copy local code to the container image.
-COPY . ./
-
 # Build the binary.
-RUN CGO_ENABLED=0 go build -mod=readonly -v -o /server .
+RUN go build -mod=readonly -v -o /app/server
 
 # Use the official Alpine image for a lean production container.
 # https://hub.docker.com/_/alpine
