@@ -66,6 +66,9 @@ func main() {
 		}
 		return _memserver
 	}()
+
+	os.Stderr.WriteString(memserver)
+
 	port, exists := os.LookupEnv("PORT")
 	if !exists {
 		port = ":8080"
