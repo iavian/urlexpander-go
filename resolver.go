@@ -72,7 +72,6 @@ func main() {
 	} else {
 		port = ":" + port
 	}
-	os.Stderr.WriteString(port)
 	http.Handle("/", &memcachedHandler{Client: memcache.New(memserver)})
 	http.ListenAndServe(port, nil)
 }
