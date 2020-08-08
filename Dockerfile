@@ -15,9 +15,6 @@ RUN go mod download
 # Build the binary.
 RUN go build -mod=readonly -v -o /app/server
 
-# Copy the binary to the production image from the builder stage.
-COPY --from=builder /app/server /app/server
-
 ENV MEMCACHED_SERVER localhost:11211
 
 # Run the web service on container startup.
