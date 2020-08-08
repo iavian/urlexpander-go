@@ -18,12 +18,12 @@ RUN CGO_ENABLED=0 go build -mod=readonly -v -o server
 # https://hub.docker.com/_/alpine
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates memcached
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /server
 
-ENV MEMCACHED_SERVER x.11211
+ENV MEMCACHED_SERVER localhost:11211
 
 # Run the web service on container startup.
 CMD ["/server"]
