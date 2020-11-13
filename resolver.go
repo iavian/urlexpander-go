@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -26,6 +27,7 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	surl = strings.Trim(surl, " ")
 	mkey := "m_" + surl
 	_eurl, err := h.Client.Get(mkey)
 	eurl := surl
