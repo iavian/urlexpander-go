@@ -31,10 +31,10 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mkey := "m_" + surl
 	_eurl, err := h.Client.Get(mkey)
 	eurl := surl
-	cachehit := false
+	cachehit := "false"
 	if err == nil {
 		eurl = string(_eurl.Value)
-		cachehit = true
+		cachehit = "true"
 	} else {
 		req, err := http.NewRequest("GET", surl, nil)
 		if err == nil {
