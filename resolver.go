@@ -31,8 +31,10 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mkey := "m_" + surl
 	_eurl, err := h.Client.Get(mkey)
 	eurl := surl
+	cachehit := false
 	if err == nil {
 		eurl = string(_eurl.Value)
+		cachehit = true
 	} else {
 		req, err := http.NewRequest("GET", surl, nil)
 		if err == nil {
@@ -56,6 +58,7 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Cache-Hit", cachehit)
 	result := Result{Surl: surl, Eurl: eurl}
 	json.NewEncoder(w).Encode(result)
 }
