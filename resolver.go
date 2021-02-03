@@ -73,6 +73,7 @@ func main() {
 	}()
 
 	os.Stderr.WriteString(memserver)
+	os.Stdout.WriteString(memserver)
 
 	port, exists := os.LookupEnv("PORT")
 	if !exists {
