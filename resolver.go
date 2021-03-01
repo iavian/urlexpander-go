@@ -29,6 +29,7 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	surl = strings.Trim(surl, " ")
 	mkey := "m_" + surl
+	h.Client.Timeout = 5 * time.Second
 	_eurl, err := h.Client.Get(mkey)
 	eurl := surl
 	cachehit := "false"
@@ -71,10 +72,10 @@ func main() {
 		}
 		return _memserver
 	}()
-	
+
 	os.Stdout.WriteString(memserver)
 	os.Stdout.WriteString("\n")
-	
+
 	port, exists := os.LookupEnv("PORT")
 	if !exists {
 		port = ":8080"
