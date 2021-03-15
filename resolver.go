@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -39,7 +40,8 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		req, err := http.NewRequest("GET", surl, nil)
 		if err == nil {
-			req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15")
+			req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15")
+			req.Header.Set("Accept", "*/*")
 			tr := &http.Transport{
 				DisableKeepAlives:  true,
 				MaxIdleConns:       1,
@@ -64,6 +66,33 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
+func serveProxy(w http.ResponseWriter, r *http.Request) {
+	surl := r.URL.Query().Get("url")
+	if surl == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	surl = strings.Trim(surl, " ")
+	contentType := "text/html; charset=utf-8"
+
+	resp, err := http.Get(surl)
+	if err != nil {
+		log.Println("Failed to process request", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	contentType = resp.Header.Get("Content-Type")
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	sb := string(body)
+	w.Header().Set("Content-Type", contentType)
+	w.Write([]byte(sb))
+}
+
 func main() {
 	memserver := func() string {
 		_memserver, exists := os.LookupEnv("MEMCACHED_SERVER")
@@ -83,5 +112,6 @@ func main() {
 		port = ":" + port
 	}
 	http.Handle("/", &memcachedHandler{Client: memcache.New(memserver)})
+	http.HandleFunc("/proxy", serveProxy)
 	http.ListenAndServe(port, nil)
 }
