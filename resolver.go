@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -20,6 +21,16 @@ type memcachedHandler struct {
 type Result struct {
 	Surl string `json:"surl"` //Short url
 	Eurl string `json:"eurl"` //Expanded url
+}
+
+type ReceiptPayload struct {
+	ReceiptData string `json:"receipt-data"`
+}
+
+type ReceiptRequest struct {
+	ReceiptData string `json:"receipt-data"`
+	Password    string `json:"password"`
+	Exclude     bool   `json:"exclude-old-transactions"`
 }
 
 func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +77,43 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
+func serveReceiptValidation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusBadRequest)
+		return
+	}
+	var payload ReceiptPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	urlString := "https://sandbox.itunes.apple.com/verifyReceipt"
+	const Password = "63d2ce5a6d844c3fa7c37e3d0f05f13a"
+	receiptRequest := ReceiptRequest{Password: Password, Exclude: false, ReceiptData: payload.ReceiptData}
+	receiptRequestJson, err := json.Marshal(receiptRequest)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return
+	}
+	resp, err := http.Post(urlString, "application/json", bytes.NewBuffer(receiptRequestJson))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(body)
+}
+
 func serveProxy(w http.ResponseWriter, r *http.Request) {
 	surl := r.URL.Query().Get("url")
 	if surl == "" {
@@ -82,7 +130,7 @@ func serveProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	contentType = resp.Header.Get("Content-Type")
-
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -112,6 +160,9 @@ func main() {
 		port = ":" + port
 	}
 	http.Handle("/", &memcachedHandler{Client: memcache.New(memserver)})
+	//For rss feed/image fetch
 	http.HandleFunc("/proxy", serveProxy)
+	//For Contacts IAP
+	http.HandleFunc("/receipt", serveReceiptValidation)
 	http.ListenAndServe(port, nil)
 }
