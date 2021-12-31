@@ -1,6 +1,6 @@
 # fly.toml file generated for iavian-url-resolver on 2021-02-02T11:52:00+05:30
 
-app = "iavian-url-resolver"
+app = "young-morning-4693"
 
 kill_signal = "SIGINT"
 kill_timeout = 5

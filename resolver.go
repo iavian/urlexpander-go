@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -39,8 +40,8 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	surl = strings.Trim(surl, " ")
-	mkey := "m_" + surl
+	surl = strings.Trim(surl, " \n\r")
+	mkey := "u_" + surl
 	h.Client.Timeout = 5 * time.Second
 	_eurl, err := h.Client.Get(mkey)
 	eurl := surl
@@ -74,6 +75,7 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Cache-Hit", cachehit)
 	result := Result{Surl: surl, Eurl: eurl}
+	fmt.Println(result)
 	json.NewEncoder(w).Encode(result)
 }
 
