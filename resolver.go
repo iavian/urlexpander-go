@@ -50,7 +50,7 @@ func (h *memcachedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		eurl = string(_eurl.Value)
 		cachehit = "true"
 	} else {
-		req, err := http.NewRequest("GET", surl, nil)
+		req, err := http.NewRequest("HEAD", surl, nil)
 		if err == nil {
 			req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15")
 			req.Header.Set("Accept", "*/*")
